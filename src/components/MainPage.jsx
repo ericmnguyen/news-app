@@ -10,7 +10,7 @@ import Modal from '@mui/material/Modal';
 import TextField from '@mui/material/TextField';
 import TextareaAutosize from '@mui/material/TextareaAutosize';
 
-import { API } from 'aws-amplify';
+import { API, Auth } from 'aws-amplify';
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { createTodo as createPostMutation } from '../graphql/mutations';
 
@@ -40,7 +40,7 @@ const MainPage = () => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [formData, setFormData] = useState(initialFormState);
+  // const [formData, setFormData] = useState(initialFormState);
   const [posts, setPosts] = useState([]);
 
   const handleOpen = () => setOpen(true);
@@ -50,18 +50,27 @@ const MainPage = () => {
     setOpen(false);
   }
 
-  const createNote = async () => {
-    if (!formData.name || !formData.description) return;
-    await API.graphql({ query: createPostMutation, variables: { input: formData } });
-    setPosts([...posts, formData]);
-    setFormData(initialFormState);
+  const createNewPost = async (params) => {
+    if (!params.name || !params.description) return;
+    await API.graphql({ query: createPostMutation, variables: { input: params } });
+    setPosts([...posts, params]);
+    // setFormData(initialFormState);
   }
 
   const handleCreate = () => {
     if (title && description) {
-      console.log('title', title);
-      console.log('description', description);
-
+      let username = '';
+      const createParams = {
+        title,
+        description,
+        username,
+        name: username
+      }
+      Auth.currentAuthenticatedUser()
+        .then(data => username = data)
+        .catch(err => console.log(err));
+      console.log('createParams', createParams);
+      createNewPost(createParams);
     }
   }
 
