@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import NewsPage from './NewsPage';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
@@ -13,8 +13,6 @@ import TextareaAutosize from '@mui/material/TextareaAutosize';
 import { API, Auth } from 'aws-amplify';
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { createTodo as createPostMutation } from '../graphql/mutations';
-
-import './styles.scss'
 
 const style = {
   position: 'absolute',
@@ -40,6 +38,7 @@ const MainPage = () => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [userName, setUsername] = useState('');
   // const [formData, setFormData] = useState(initialFormState);
   const [posts, setPosts] = useState([]);
 
@@ -50,32 +49,33 @@ const MainPage = () => {
     setOpen(false);
   }
 
+  useEffect(() => {
+    Auth.currentAuthenticatedUser()
+      .then(data => setUsername(data))
+      .catch(err => console.log(err));
+  }, []);
+
   const createNewPost = async (params) => {
     if (!params.name || !params.description) return;
     await API.graphql({ query: createPostMutation, variables: { input: params } });
     setPosts([...posts, params]);
-    // setFormData(initialFormState);
   }
 
   const handleCreate = () => {
     if (title && description) {
-      let username = '';
       const createParams = {
         title,
         description,
-        username,
-        name: username
+        userName: userName.username,
+        name: title,
       }
-      Auth.currentAuthenticatedUser()
-        .then(data => username = data)
-        .catch(err => console.log(err));
-      console.log('createParams', createParams);
       createNewPost(createParams);
+      setOpen(false);
     }
   }
 
   return (<div>
-    <div className='news-container'>
+    <div className='news-container' style={{ marginBottom: '16px' }}>
       <NewsPage />
     </div>
     <Grid container spacing={2}>
