@@ -111,6 +111,7 @@ const MainPage = () => {
         <Button variant="contained" onClick={handleCreate}>Create</Button>
       </Box>
     </Modal>
+    reload did not done yet. Please reload after creating.
   </div>)
 };
 
